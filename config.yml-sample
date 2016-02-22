@@ -1,0 +1,5 @@
+twilio:
+    account_sid:ACCOUNT_SID_HERE
+    auth_token:AUTHORIZATION_TOKEN_HERE
+    mobile_phone:+18885551212
+    twilio_phone:+19992225555
