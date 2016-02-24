@@ -1,5 +1,5 @@
 # netcheck
-Rename 'config.yml-sample' to 'config.yml', and add your Twilio details
+Rename 'config.cfg-sample' to 'config.cfg', and add your Twilio details
 
 # uptime.py
 Checks for your online status, and logs it.
