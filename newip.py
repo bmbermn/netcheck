@@ -1,15 +1,5 @@
 #! /usr/bin/env python
 
-'''
-    Requires the installation of the Twilio Python library.
-
-        pip install twilio
-
-    Pushbullet can be installed with pip
-
-        pip install pushbullet.py
-'''
-
 import logging
 from os.path import isfile
 from socket import gethostname
@@ -33,29 +23,27 @@ except ImportError:
 
 ## Pushbullet notifications
 def pb_push(msg):
-    try:
-        from pushbullet import Pushbullet
-    except ImportError:
-        print "Install pushbullet.py library"
-        exit(3)
-
     if config.pushbullet['enable'] == 1:
-        pb = Pushbullet(pb_api_key)
-        push = pb.push_note(my_host, msg)
+        try:
+            from pushbullet import Pushbullet
+            pb = Pushbullet(pb_api_key)
+            push = pb.push_note(my_host, msg)
+        except ImportError:
+            print "Install pushbullet.py library"
+            exit(3)
 
 ## Twilio SMS
 def twilio_sms(host, ip):
     try:
-        from twilio.rest import TwilioRestClient
+        if config.twilio['enable'] == 1:
+            from twilio.rest import TwilioRestClient
+            client = TwilioRestClient(twilio_account_sid, twilio_auth_token)
+            sms = client.messages.create(to = mobile_ph,
+                                        from_ = twilio_ph,
+                                        body = "Set IP: %s: %s" % (host, ip))
     except ImportError:
         print "Install twilio library"
         exit(4)
-
-    if config.twilio['enable'] == 1:
-        client = TwilioRestClient(account_sid, auth_token)
-        sms = client.messages.create(to = mobile_ph,
-                                    from_ = twilio_ph,
-                                    body = "Set IP: %s: %s" % (host, ip))
 
 ## Logging
 log = logging.getLogger('newip.py')
