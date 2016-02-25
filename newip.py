@@ -10,7 +10,6 @@
         pip install pushbullet.py
 '''
 
-import config
 import logging
 from os.path import isfile
 from socket import gethostname
@@ -19,11 +18,18 @@ import requests
 ip_url = 'https://api.ipify.org'
 ip_file = 'ip'
 my_host = gethostname()
-account_sid = config.twilio['account_sid']
-auth_token = config.twilio['auth_token']
-mobile_ph = config.twilio['mobile_phone']
-twilio_ph = config.twilio['twilio_phone']
-pb_api_key = config.pushbullet['access_token']
+
+## Import the config.py file
+try:
+    import config
+    pb_api_key = config.pushbullet['access_token']
+    twilio_account_sid = config.twilio['account_sid']
+    twilio_auth_token = config.twilio['auth_token']
+    twilio_ph = config.twilio['twilio_phone']
+    mobile_ph = config.twilio['mobile_phone']
+except ImportError:
+    print "Rename config.py-sample to config.py"
+    exit(1)
 
 ## Pushbullet notifications
 def pb_push(msg):
@@ -31,7 +37,7 @@ def pb_push(msg):
         from pushbullet import Pushbullet
     except ImportError:
         print "Install pushbullet.py library"
-        exit(2)
+        exit(3)
 
     if pb_api_key != 0000:
         pb = Pushbullet(pb_api_key)
@@ -43,12 +49,13 @@ def twilio_sms(host, ip):
         from twilio.rest import TwilioRestClient
     except ImportError:
         print "Install twilio library"
-        exit(3)
+        exit(4)
 
-    client = TwilioRestClient(account_sid, auth_token)
-    sms = client.messages.create(to = mobile_ph,
-                                from_ = twilio_ph,
-                                body = "Set IP: %s: %s" % (host, ip))
+    if twilio_account_sid != 'ACCOUNT_SID_HERE':
+        client = TwilioRestClient(account_sid, auth_token)
+        sms = client.messages.create(to = mobile_ph,
+                                    from_ = twilio_ph,
+                                    body = "Set IP: %s: %s" % (host, ip))
 
 ## Logging
 log = logging.getLogger('newip.py')
@@ -65,7 +72,7 @@ try:
     my_ip = requests.get(ip_url, timeout=5).content.strip()
 except requests.exceptions.ConnectionError:
     my_ip = 'CONNECTION TIMEOUT'
-    exit(1)
+    exit(2)
 
 ## IP check, logging, and notifications
 if isfile(ip_file):

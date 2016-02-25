@@ -1,9 +1,9 @@
 twilio = dict(
-    account_sid : 'ACCOUNT_SID_HERE'
-    auth_token : 'AUTHORIZATION_TOKEN_HERE'
-    mobile_phone : '+18885551212'
-    twilio_phone : '+19992225555'
+    account_sid = 'ACCOUNT_SID_HERE',
+    auth_token = 'AUTHORIZATION_TOKEN_HERE',
+    twilio_phone = '+19992225555',
+    mobile_phone = '+18885551212'
 )
 pushbullet = dict(
-    access_token : '0000'
+    access_token = '0000'
 )
