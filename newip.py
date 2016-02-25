@@ -39,7 +39,7 @@ def pb_push(msg):
         print "Install pushbullet.py library"
         exit(3)
 
-    if pb_api_key != 0000:
+    if config.pushbullet['enable'] == 1:
         pb = Pushbullet(pb_api_key)
         push = pb.push_note(my_host, msg)
 
@@ -51,7 +51,7 @@ def twilio_sms(host, ip):
         print "Install twilio library"
         exit(4)
 
-    if twilio_account_sid != 'ACCOUNT_SID_HERE':
+    if config.twilio['enable'] == 1:
         client = TwilioRestClient(account_sid, auth_token)
         sms = client.messages.create(to = mobile_ph,
                                     from_ = twilio_ph,
