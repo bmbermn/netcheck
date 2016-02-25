@@ -1,7 +1,7 @@
 # netcheck
 Rename 'config.py-sample' to 'config.py', and add your details.
 
-Send SMS via Twilio, and send push notifications via Pushbullet.
+Send SMS via Twilio, and push notification via Pushbullet.
 
 Twilio: https://www.twilio.com/
 
