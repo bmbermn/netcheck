@@ -21,6 +21,13 @@ except ImportError:
     print "Rename config.py-sample to config.py"
     exit(1)
 
+## Get the IP
+try:
+    my_ip = requests.get(ip_url, timeout=5).content.strip()
+except requests.exceptions.ConnectionError:
+    print "Connection timeout"
+    exit(2)
+
 ## Pushbullet notifications
 def pb_push(msg):
     if config.pushbullet['enable'] == 1:
@@ -54,13 +61,6 @@ frmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         "%Y/%m/%d %H:%M:%S")
 fh.setFormatter(frmt)
 log.addHandler(fh)
-
-## Get the IP
-try:
-    my_ip = requests.get(ip_url, timeout=5).content.strip()
-except requests.exceptions.ConnectionError:
-    my_ip = 'CONNECTION TIMEOUT'
-    exit(2)
 
 ## IP check, logging, and notifications
 if isfile(ip_file):
