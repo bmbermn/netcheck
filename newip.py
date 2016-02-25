@@ -5,21 +5,52 @@
 
         pip install twilio
 
-    The config module can be downloaded here:
+    Pushbullet can be installed with pip
 
-        https://www.red-dove.com/config-doc/#download
+        pip install pushbullet.py
 '''
 
-from config import Config
+import config
 import logging
 from os.path import isfile
 from socket import gethostname
-from twilio.rest import TwilioRestClient
 import requests
 
-CONF = file('config.cfg')
-cfg = Config(CONF)
+ip_url = 'https://api.ipify.org'
+ip_file = 'ip'
+my_host = gethostname()
+account_sid = config.twilio['account_sid']
+auth_token = config.twilio['auth_token']
+mobile_ph = config.twilio['mobile_phone']
+twilio_ph = config.twilio['twilio_phone']
+pb_api_key = config.pushbullet['access_token']
 
+## Pushbullet notifications
+def pb_push(msg):
+    try:
+        from pushbullet import Pushbullet
+    except ImportError:
+        print "Install pushbullet.py library"
+        exit(2)
+
+    if pb_api_key != 0000:
+        pb = Pushbullet(pb_api_key)
+        push = pb.push_note(my_host, msg)
+
+## Twilio SMS
+def twilio_sms(host, ip):
+    try:
+        from twilio.rest import TwilioRestClient
+    except ImportError:
+        print "Install twilio library"
+        exit(3)
+
+    client = TwilioRestClient(account_sid, auth_token)
+    sms = client.messages.create(to = mobile_ph,
+                                from_ = twilio_ph,
+                                body = "Set IP: %s: %s" % (host, ip))
+
+## Logging
 log = logging.getLogger('newip.py')
 log.setLevel(logging.INFO)
 fh = logging.FileHandler('online.log')
@@ -29,36 +60,28 @@ frmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 fh.setFormatter(frmt)
 log.addHandler(fh)
 
-ip_url = 'https://api.ipify.org'
-mobile_ph = cfg.mobile_phone
-twilio_ph = cfg.twilio_phone
-account_sid = cfg.twilio_account_sid
-auth_token = cfg.twilio_auth_token
-client = TwilioRestClient(account_sid, auth_token)
-
-my_host = gethostname()
-ip_file = 'ip'
-
+## Get the IP
 try:
     my_ip = requests.get(ip_url, timeout=5).content.strip()
 except requests.exceptions.ConnectionError:
     my_ip = 'CONNECTION TIMEOUT'
     exit(1)
 
+## IP check, logging, and notifications
 if isfile(ip_file):
     with open(ip_file, 'r') as old_ip:
         cur_ip = old_ip.read()
         if cur_ip != my_ip:
-            log.info("IP address CHANGED -- %s", my_ip)
             with open(ip_file, 'w') as new_ip:
                 new_ip.write(my_ip)
-            sms = client.messages.create(to=mobile_ph,
-                                        from_=twilio_ph,
-                                        body="New IP: "+my_host+": "+my_ip)
+            status_msg = "IP address CHANGED -- %s" % my_ip
+            log.info(status_msg)
+            pb_push(status_msg)
+            twilio_sms(my_host, my_ip)
 else:
     with open(ip_file, 'w') as save_ip:
         save_ip.write(my_ip)
-    log.info("IP address established -- %s", my_ip)
-    sms = client.messages.create(to=mobile_ph,
-                                from_=twilio_ph,
-                                body="Set IP: "+my_host+": "+my_ip)
+    status_msg = "IP address established -- %s" % my_ip
+    log.info(status_msg)
+    pb_push(status_msg)
+    twilio_sms(my_host, my_ip)

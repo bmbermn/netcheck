@@ -1,13 +1,19 @@
 # netcheck
-Rename 'config.cfg-sample' to 'config.cfg', and add your Twilio details.
-'config.cfg' file only needed for newip.py.
+Rename 'config.py-sample' to 'config.py', and add your details.
+Can SMS via Twilio, and send push notifications via Pushbullet.
+
+Twilio: https://www.twilio.com/
+pip install twilio
+
+Pushbullet: https://www.pushbullet.com/
+pip install pushbullet.py
+
 
 # newip.py
-Needs Twilio and config module.
-Twilio module can be installed via pip.
-Download the config module here: https://www.red-dove.com/config-doc/#download
+When ISP changes your IP, this can send a Twilio SMS, or Pushbullet notitication
+to advise on the new IP address.
 
 # uptime.py
 Checks for your online status, and logs it.
 If status changes, ONLINE<=>OFFLINE, it gets logged, with a time stamp.
-Helpful to determine when ISP issues happen overnight.
+Can't send a notification when offline, obviously, but can notify when online.

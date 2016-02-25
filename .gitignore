@@ -1,2 +1,2 @@
-## Ignore YAML configuration file
-*.cfg
+## Ignore configuration file
+config.py
