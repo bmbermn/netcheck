@@ -2,8 +2,8 @@
 
 import logging
 from os.path import isfile
-from socket import gethostname
 import requests
+from socket import gethostname
 
 ip_url = 'https://api.ipify.org'
 ip_file = 'ip'
