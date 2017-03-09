@@ -1,82 +1,69 @@
 #! /usr/bin/env python
 
+
 import logging
 from os.path import isfile
 import requests
 from socket import gethostname
+import yaml
 
-ip_url = 'https://api.ipify.org'
-ip_file = 'ip'
-my_host = gethostname()
+with open('config.yml') as f:
+    config = yaml.load(f)
+tg_api_url = 'https://api.telegram.org/bot'
+tg_api_token = config['Bots']['<username>']['token']
+tg_api_method = 'sendMessage'
+tg_api_bot_url = tg_api_url + tg_api_token + '/' + tg_api_method
+tg_chat_id = config['Bots']['<username>']['chat_id']
 
-## Import the config.py file
-try:
-    import config
-    pb_api_key = config.pushbullet['access_token']
-    twilio_account_sid = config.twilio['account_sid']
-    twilio_auth_token = config.twilio['auth_token']
-    twilio_ph = config.twilio['twilio_phone']
-    mobile_ph = config.twilio['mobile_phone']
-except ImportError:
-    print "Rename config.py-sample to config.py"
-    exit(1)
-
-## Get the IP
-try:
-    my_ip = requests.get(ip_url, timeout=5).content.strip()
-except requests.exceptions.ConnectionError:
-    print "Connection timeout"
-    exit(2)
-
-## Pushbullet notifications
-def pb_push(msg):
-    if config.pushbullet['enable'] == 1:
-        try:
-            from pushbullet import Pushbullet
-            pb = Pushbullet(pb_api_key)
-            push = pb.push_note(my_host, msg)
-        except ImportError:
-            print "Install pushbullet.py library"
-            exit(3)
-
-## Twilio SMS
-def twilio_sms(host, ip):
-    try:
-        if config.twilio['enable'] == 1:
-            from twilio.rest import TwilioRestClient
-            client = TwilioRestClient(twilio_account_sid, twilio_auth_token)
-            sms = client.messages.create(to = mobile_ph,
-                                        from_ = twilio_ph,
-                                        body = "Set IP: %s: %s" % (host, ip))
-    except ImportError:
-        print "Install twilio library"
-        exit(4)
-
-## Logging
 log = logging.getLogger('newip.py')
 log.setLevel(logging.INFO)
-fh = logging.FileHandler('online.log')
+fh = logging.FileHandler(config['Logging']['logfile'])
 fh.setLevel(logging.INFO)
 frmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         "%Y/%m/%d %H:%M:%S")
 fh.setFormatter(frmt)
 log.addHandler(fh)
 
-## IP check, logging, and notifications
+
+my_host = gethostname()
+ip_file = config.['Logging']['ip_file']
+
+try:
+    ip_url = 'https://api.ipify.org'
+    my_ip = requests.get(ip_url, timeout=5).content.strip()
+except requests.exceptions.ConnectionError:
+    my_ip = 'CONNECTION TIMEOUT'
+
+def payload(type):
+    if type == 'new':
+        status = 'New IP'
+    elif type == 'set':
+        status = 'Set IP'
+
+    text_msg = ("*HOST STATUS*\nHost: %s\nStatus: %s\nIP: %s"
+                % (my_host, status, my_ip))
+
+    msg_data = {'chat_id': tg_chat_id,
+                'text': text_msg,
+                'parse_mode': 'Markdown'}
+
+    return msg_data
+
+
 if isfile(ip_file):
-    with open(ip_file, 'r') as old_ip:
+    with open(ip_file) as old_ip:
         cur_ip = old_ip.read()
-        if cur_ip != my_ip:
+        if cur_ip == my_ip:
+            log.info("IP has not updated -- %s", my_ip)
+        elif my_ip == 'CONNECTION TIMEOUT':
+            log.warn("IP has not updated -- %s", my_ip)
+        else:
+            log.info("IP address CHANGED -- %s", my_ip)
             with open(ip_file, 'w') as new_ip:
                 new_ip.write(my_ip)
-            status_msg = "IP address CHANGED -- %s" % my_ip
-            log.info(status_msg)
-            pb_push(status_msg)
-            twilio_sms(my_host, my_ip)
+                requests.get(tg_api_bot_url, data=payload('new'))
 else:
     with open(ip_file, 'w') as save_ip:
         save_ip.write(my_ip)
-    status_msg = "IP address established -- %s" % my_ip
-    log.info(status_msg)
-    pb_push(status_msg)
-    twilio_sms(my_host, my_ip)
+    log.info("IP address established -- %s", my_ip)
+    requests.get(tg_api_bot_url, data=payload('set'))
