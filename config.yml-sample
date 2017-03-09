@@ -1,9 +1,3 @@
-# Logging configuration
-Logging:
-    logfile: '/home/<username>/directory/file.log'
-    ip_file: '/home/<username>/directory/ip'
-
-# Telegram Bots configuration
 Bots:
     Bot1:
         username: Bot1_bot
@@ -17,3 +11,9 @@ Bots:
         username: Bot3_bot
         token: 333333333:CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         chat_ID: 777777777
+Host:
+    hostname: ''
+    lan_ip: ''
+    wlan_ip: ''
+Logging:
+    logfile: /home/<username>/directory/file.log
