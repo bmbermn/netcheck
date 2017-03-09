@@ -1,17 +1,19 @@
 # netcheck
-Rename 'config.py-sample' to 'config.py', and add your details.
+Rename 'config.yml-sample' to 'config.yml', and add your details.
 
-Set "enable = 1" to use the corresponding service.
+This uses the Telegram platform to send notifications.
+https://telegram.org
 
-Send push notification via Pushbullet, and SMS via Twilio.
+In addition to a free sign-up, you'll need to create a bot.
+Use the botfather for assistance.
+https://core.telegram.org/bots
 
-Pushbullet: https://www.pushbullet.com/
+Required modules (pip install):
+* logging
+* netifaces
+* requests
+* yaml
 
-`$ pip install pushbullet.py`
-
-Twilio: https://www.twilio.com/
-
-`$ pip install twilio`
 
 ## newip.py
 If ISP changes your IP, this sends a Pushbullet notitication or Twilio SMS.
