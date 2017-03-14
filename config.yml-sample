@@ -12,8 +12,12 @@ Bots:
         token: 333333333:CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         chat_ID: 777777777
 Host:
-    hostname: ''
-    lan_ip: ''
-    wlan_ip: ''
+    hostname:
+    lan_ip:
+    wlan_ip:
 Logging:
     logfile: /home/<username>/directory/file.log
+Online:
+  check:
+  latest:
+  status: Offline

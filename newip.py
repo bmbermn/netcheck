@@ -77,7 +77,7 @@ with open('config.yml', 'w+') as fw:
         set_lan_ip()
         log.info("IP address established -- %s", my_ip)
         fw.write(yaml.dump(config, default_flow_style=False))
-        requests.get(tg_api_bot_url, data=payload('set'))
+        requests.get(tg_api_bot_url, params=payload('set'))
     elif wlan_ip == my_ip:
         set_lan_ip()
         log.info("IP has not updated -- %s", my_ip)
@@ -92,5 +92,5 @@ with open('config.yml', 'w+') as fw:
         set_lan_ip()
         log.info("IP address CHANGED -- %s", my_ip)
         fw.write(yaml.dump(config, default_flow_style=False))
-        requests.get(tg_api_bot_url, data=payload('new'))
+        requests.get(tg_api_bot_url, params=payload('new'))
 
