@@ -8,6 +8,7 @@ from socket import gethostname
 import sys
 import yaml
 
+yamlconf = '/path/to/config.yml'
 rebooted = False
 
 try:
@@ -18,7 +19,7 @@ except IndexError:
 
 now = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
 
-with open('config.yml') as fr:
+with open(yamlconf) as fr:
     config = yaml.load(fr)
 
 log = logging.getLogger('uptime.py')
@@ -43,16 +44,6 @@ log_status = config['Online']['status']
 
 check_url = 'https://google.com'
 
-try:
-    response = requests.get(check_url).status_code
-    if response == 200:
-        online_status = 'Online'
-    else:
-        online_status = 'Offline'
-except requests.exceptions.ConnectionError:
-    online_status = 'Offline'
-
-
 def notify_telegram_bot(status, latest, check):
     text_msg = ("*HOST UPTIME*\nHost: %s\nStatus: %s\nLatest: %s\nCheck: %s"
                 % (my_host, status, latest, check))
@@ -64,37 +55,60 @@ def notify_telegram_bot(status, latest, check):
     requests.get(tg_api_bot_url, params=msg_data)
 
 
-with open('config.yml', 'w+') as fw:
+try:
+    response = requests.get(check_url).status_code
+    if response == 200:
+        online_status = 'Online'
+    else:
+        online_status = 'Offline'
+except requests.exceptions.ConnectionError:
+    online_status = 'Offline'
+
+with open(yamlconf, 'w+') as fw:
     if rebooted and online_status == 'Online':
         log.info("Status CHANGED: Reboot")
         notify_telegram_bot('Reboot', log_latest, now)
+        config['Host']['hostname'] = my_host
         config['Online']['check'] = now
         config['Online']['latest'] = now
         config['Online']['status'] = 'Online'
         fw.write(yaml.dump(config, default_flow_style=False))
     elif rebooted and online_status == 'Offline':
         log.warn("Status CHANGED: Reboot")
+        config['Host']['hostname'] = my_host
         config['Online']['check'] = now
-        config['Online']['status'] = 'Offline'
+        config['Online']['status'] = 'Reboot'
+        fw.write(yaml.dump(config, default_flow_style=False))
+    elif log_status == 'Reboot' and online_status == 'Offline':
+        log.warn("Status remains: Offline")
+        config['Host']['hostname'] = my_host
+        config['Online']['check'] = now
         fw.write(yaml.dump(config, default_flow_style=False))
     elif log_status == 'Online' and online_status == 'Online':
         log.info("Status remains: Online")
+        config['Host']['hostname'] = my_host
         config['Online']['check'] = now
         config['Online']['latest'] = now
         fw.write(yaml.dump(config, default_flow_style=False))
     elif log_status == 'Online' and online_status == 'Offline':
         log.warn("Status CHANGED: Offline")
+        config['Host']['hostname'] = my_host
         config['Online']['check'] = now
         config['Online']['status'] = 'Offline'
         fw.write(yaml.dump(config, default_flow_style=False))
-    elif log_status == 'Offline' and online_status == 'Online':
+    elif log_status != 'Online' and online_status == 'Online':
         log.info("Status CHANGED: Online")
-        notify_telegram_bot('Online', log_latest, now)
+        if log_status == 'Reboot':
+            notify_telegram_bot('Reboot', log_latest, now)
+        else:
+            notify_telegram_bot('Online', log_latest, now)
+        config['Host']['hostname'] = my_host
         config['Online']['check'] = now
         config['Online']['latest'] = now
         config['Online']['status'] = 'Online'
         fw.write(yaml.dump(config, default_flow_style=False))
     elif log_status == 'Offline' and online_status == 'Offline':
         log.warn("Status remains: Offline")
+        config['Host']['hostname'] = my_host
         config['Online']['check'] = now
         fw.write(yaml.dump(config, default_flow_style=False))
