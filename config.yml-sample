@@ -14,7 +14,7 @@ Bots:
 Host:
     hostname:
     lan_ip:
-    wlan_ip:
+    wan_ip:
 Logging:
     logfile: /home/<username>/directory/file.log
 Online:

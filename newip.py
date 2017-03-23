@@ -28,7 +28,7 @@ tg_api_bot_url = tg_api_url + tg_api_token + '/' + tg_api_method
 tg_chat_id = config['Bots']['botname']['chat_id']
 
 my_host = gethostname()
-wlan_ip = config['Host']['wlan_ip']
+wan_ip = config['Host']['wan_ip']
 lan_ip = config['Host']['lan_ip']
 
 def set_lan_ip():
@@ -52,7 +52,7 @@ def payload(type):
         status = 'Set IP'
 
     text_msg = ("*HOST STATUS*\nHost: %s\nStatus: %s\nIP: %s\nLAN: %s"
-                % (my_host, status, wlan_ip, lan_ip))
+                % (my_host, status, wan_ip, lan_ip))
 
     msg_data = {'chat_id': tg_chat_id,
                 'text': text_msg,
@@ -71,14 +71,14 @@ except requests.exceptions.ConnectionError:
 
 
 with open('config.yml', 'w+') as fw:
-    if wlan_ip == '':
-        config['Host']['wlan_ip'] = my_ip
-        wlan_ip = my_ip
+    if wan_ip == '':
+        config['Host']['wan_ip'] = my_ip
+        wan_ip = my_ip
         set_lan_ip()
         log.info("IP address established -- %s", my_ip)
         fw.write(yaml.dump(config, default_flow_style=False))
         requests.get(tg_api_bot_url, params=payload('set'))
-    elif wlan_ip == my_ip:
+    elif wan_ip == my_ip:
         set_lan_ip()
         log.info("IP has not updated -- %s", my_ip)
         fw.write(yaml.dump(config, default_flow_style=False))
@@ -86,9 +86,9 @@ with open('config.yml', 'w+') as fw:
         set_lan_ip()
         log.warn("IP has not updated -- %s", my_ip)
         fw.write(yaml.dump(config, default_flow_style=False))
-    elif wlan_ip != my_ip:
-        config['Host']['wlan_ip'] = my_ip
-        wlan_ip = my_ip
+    elif wan_ip != my_ip:
+        config['Host']['wan_ip'] = my_ip
+        wan_ip = my_ip
         set_lan_ip()
         log.info("IP address CHANGED -- %s", my_ip)
         fw.write(yaml.dump(config, default_flow_style=False))
