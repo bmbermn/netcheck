@@ -1,0 +1,4 @@
+@reboot /home/pi/.online/uptime.py reboot
+@reboot /home/pi/.online/newip.py
+0 * * * * /home/pi/.online/newip.py
+*/5 * * * * /home/pi/.online/uptime.py

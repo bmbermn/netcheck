@@ -1,0 +1,4 @@
+logging
+netifaces
+pyyaml
+requests
